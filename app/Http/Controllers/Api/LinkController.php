@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GenerateLinkRequest;
 use App\Http\Resources\LinkResource;
 use App\Models\Link;
+use App\Services\LimitsCalculator;
 use App\Services\LinkService;
 
 class LinkController extends Controller
@@ -29,7 +30,7 @@ class LinkController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function limits(LinkService $service)
+    public function limits(LimitsCalculator $service)
     {
         return response()->json([
             'data' => $service->getAllAvailableLimits()

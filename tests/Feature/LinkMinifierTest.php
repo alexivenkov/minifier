@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Link;
+use App\Services\LimitsCalculator;
 use Illuminate\Http\Response;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class LinkMinifierTest extends TestCase
@@ -173,6 +175,34 @@ class LinkMinifierTest extends TestCase
                     5 => (36 ** 5) - 2,
                     6 => (36 ** 6) - 2
                 ]
+            ]);
+    }
+
+    /**
+     * @test
+     */
+    public function it_cannot_create_new_minified_link_if_limit_is_reached(): void
+    {
+        $this->mock(
+            LimitsCalculator::class,
+            function (MockInterface $mock): void {
+                $mock->shouldReceive('getAllAvailableLimits')
+                    ->once()
+                    ->andReturn([
+                        3 => 0,
+                        4 => 0,
+                        5 => 0,
+                        6 => 0
+                    ]);
+            }
+        );
+
+        $this->postJson(route('generate', [
+            'link' => 'http://example.com'
+        ]))
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment([
+                'message' => 'Links generation limit has been reached'
             ]);
     }
 }
