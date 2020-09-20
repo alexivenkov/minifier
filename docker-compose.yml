@@ -1,0 +1,38 @@
+version: '3'
+services:
+  web:
+    container_name: api.minifier
+    build:
+      context: .
+      dockerfile: .docker/build/php.dockerfile
+    working_dir: /app
+    user: application
+    restart: always
+    volumes:
+      - .:/app:delegated
+      - ~/.composer:/root/.composer:delegated
+    environment:
+      WEB_DOCUMENT_ROOT: "/app/public"
+      WEB_DOCUMENT_INDEX: "index.php"
+      PHP_DATE_TIMEZONE: "UTC"
+      COMPOSER_MEMORY_LIMIT: "-1"
+    links:
+      - db
+    ports:
+      - 80:80
+
+  db:
+    container_name: postgres.minifier
+    image: "postgres:10"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=minifier
+      - POSTGRES_USER=minifier
+      - POSTGRES_DB=minifier
+    restart: always
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres: ~
